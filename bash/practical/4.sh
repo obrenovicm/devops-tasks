@@ -2,6 +2,15 @@
 
 # script that demonstrates caesar cipher
 
+usage() {
+	echo "Usage : ./script -s <shift-value> -i <input-file> -o <output-file>"
+}
+
+if [[ $# < 6 ]]; then
+	usage
+fi
+
+
 for letter in {A..Z}; do
 		array+=($letter)		
 done
@@ -14,15 +23,11 @@ while getopts "s:i:o:" opt; do
 								shift=$(( shift + 26 ))
 						fi
 
-						echo "shift value : $shift"
 						;;
 				i)
-						echo "input file passed : $OPTARG"
 						input=$(cat $OPTARG)
-						echo "text that needs to be encrypted : $input"
 						;;
 				o)
-						echo "output file passed: $OPTARG"
 						solution=$(cat $OPTARG)
 						;;
 				\?)
@@ -34,9 +39,13 @@ while getopts "s:i:o:" opt; do
 a_to="${array[shift]}"
 z_to="${array[$(( shift - 1 ))]}"
 
-echo "A translates to : $a_to"
-echo "Z translates to : $z_to"
 
 
 output=`echo "$input" | tr "A-Z" "${a_to}-ZA-${z_to}"`
-echo "$output"
+
+if [[ $output == $solution ]]; then
+	echo "Encryption successful"
+else
+	echo "Something went wrong :/"
+fi
+

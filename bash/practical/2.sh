@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # function declaration - start
+set -e
 
 function processInput {
 		# $1 - operator, $2 - array
@@ -17,6 +18,16 @@ function processInput {
 		echo "Final result : $res"
 }
 
+function usage {
+	echo "Usage : ./script -o <operator> -n <num-seq> (-d)? "
+	exit 1
+}
+
+if [[ $# < 5 ]]; then
+	usage
+fi
+
+
 OPERATOR=""
 
 while getopts "o:n:d" opt; do
@@ -24,7 +35,6 @@ while getopts "o:n:d" opt; do
 		case $opt in
 			o)
 				OPERATOR="$OPTARG"
-				echo "passed operator : $OPERATOR"
 				;;
 			n)
 				array+=("$OPTARG")
@@ -32,11 +42,9 @@ while getopts "o:n:d" opt; do
 						array+=("${!OPTIND}")
 						OPTIND="$(expr $OPTIND \+ 1)"
 					done
-				echo "passed number/s : ${array[@]}"
 				processInput "${array[@]}"
 				;;
 		d)
-				echo "debug flag passed"
 				user=`whoami`
 				echo "User : $user"
 				echo "Numbers : "${array[@]}""
