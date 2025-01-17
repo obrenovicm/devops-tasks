@@ -19,6 +19,31 @@ ROW_LEN=8
 LINE_LEN=39
 
 
+function usage_db {
+	echo "Usage: "$0" create_db <db-name>"
+	exit 150
+}
+
+function usage_table {
+	echo "Usage: "$0" create_table <db-name> <table-name> <args..>"
+	exit 151
+}
+
+function usage_insert {
+	echo "Usage: "$0" insert_data <db-name> <table-name> <args..>"
+	exit 152
+}
+
+function usage_delete {
+	echo "Usage: "$0" delete_data <db-name> <table-name> <value>"
+	exit 153
+}
+
+function usage_select {
+	echo "Usage: "$0" select_data <db-name> <table-name>"
+	exit 154
+}
+
 function check_row {
 	local row="$1"
 	if [[ ${#row} -gt $ROW_LEN ]]; then
@@ -147,7 +172,7 @@ function select_data {
 }
 
 function delete_data {
-
+	
 	local arr=("$@")
 	local db_name="${arr[1]}"
 	local table_name="${arr[2]}"
@@ -161,23 +186,85 @@ function delete_data {
 	# find the record in the table
 	local start_line=$(grep -n "TABLE:$table_name" "$db_name.txt" | cut -d ":" -f 1)
 	local end_line=$(grep -n "TABLE:" $db_name.txt | grep -A 1 "TABLE:$table_name" | tail -n 1 | cut -d ":" -f 1)
+	
+	if [[ $start_line == $end_line ]]; then
+		end_line=$( grep -c '^' "$db_name.txt") # another way of calculating a no of lines in a file
+	fi
+	
+	start_line=$(( start_line + 1 ))
+		
+	local cols=$(grep -n "$key" "$db_name.txt" | grep "$start_line:" | xargs | cut -d ":" -f 2)
+	IFS=' ' read -r -a array <<< "$cols"
 
+	
+	# declare the colon in which the value is; if = -1 then colon does not exist 
+	col_num=-1
+
+	for ((i=0 ; i < "${#array[@]}"; i++ )); do
+		if [[ $key == "${array[i]}" ]] ; then
+			col_num=$i
+			break
+		fi
+	done
+	
+	if [[ $col_num == -1 ]]; then
+		echo "Inserted key does not exist in table"
+		exit 190
+	fi
+	# now, for loop to determine which row needs to be deleted and save the line of it; if = -1 then value does not exist
+	delete_line=()
+	
+	for ((i="$start_line" ; i <= "$end_line" ; i++ )); do
+		line=$(sed -n "${i},${i}p" "$db_name.txt" | xargs | cut -d " " -f "$(( col_num + 1 ))")
+		if [[ $line == $value ]]; then
+			delete_line+=($i)
+		fi
+	done
+		
+	if [[ "${#delete_line[@]}" == 0 ]]; then
+	   echo "Value does not exist in the table."
+	   exit 191
+   fi
+
+	
+	# finally, go through lines and delete them
+	for ((i=${#delete_line[@]} -1 ; i >= 0; i-- )); do
+		sed -i '' "${delete_line[i]}d" "$db_name.txt"
+	done
 	
 }
 
 if [[ $1 == "create_db" ]]; then
+	if [[ "$#" < 2 ]]; then
+		usage_db
+	fi
 	create_database $2
 
+
 elif [[ $1 == "create_table" ]]; then
+	if [[ "$#" < 4 ]]; then
+		usage_table
+	fi
 	create_table $@
 
 elif [[ $1 == "insert_data" ]]; then
+	if [[ "$#" < 4 ]]; then # insert_data, db-name, table-name, and at least 1 value
+		usage_insert
+	fi
 	insert_data $@
 
 elif [[ $1 == "select_data" ]]; then
+	if [[ "$#" < 3 ]]; then
+		usage_select
+	fi
+
 	select_data $@
 
 elif [[ $1 == "delete_data" ]]; then
+	if [[ "$#" < 4 ]]; then
+		usage_delete
+	fi
+
 	delete_data $@
 fi
 
