@@ -13,7 +13,7 @@ if __name__ == "__main__":
         line = f.readline()
         while line:
 
-            tmp = line.split('"Mozilla/5.0')
+            tmp = line.split('"Mozilla/')
             if len(tmp) > 1: # invalid format, cannot process
                 agents[tmp[1]] += 1
 
