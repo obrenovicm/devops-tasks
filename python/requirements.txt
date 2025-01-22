@@ -3,3 +3,4 @@ requests==2.32.3
 py-cpuinfo==9.0.0
 python-dotenv==1.0.1
 urllib3==1.26.10
+python-dotenv==1.0.1

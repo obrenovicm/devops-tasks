@@ -4,7 +4,7 @@ import os
 import dotenv
 import sys
 
-api_base_url = 'https://api.surveymonkey.com/v3'
+api_base_url = 'http://api.surveymonkey.com/v3/'
 dotenv.load_dotenv()
 survey_token = os.getenv("SURVEY_TOKEN")
 
@@ -15,42 +15,59 @@ headers = {
 }
 
 
-def create_survey():
+def create_survey(title):
+
     url = f'{api_base_url}surveys'
 
     payload = {
-        "title" : "New Survey"
+        "title" : title
     }
 
     res = requests.post(url, json=payload, headers=headers)
     survey = res.json()
 
     if res.status_code == 201:
-        print("Survey sucessfuly created.")
-        return survey['id']
+        print("Survey successfully created.")
+        return survey['id'], survey['page_count']
     else:
         print("Error creating survey.")
         print(res.json())
 
 
-def create_question(survey_id, question_text, answers):
+def create_question(survey_id, questions, answers, page_id):
 
-    url = f'{api_base_url}surveys/{survey_id}/pages/1/questions'
+    url = f'{api_base_url}surveys/{survey_id}/pages/{page_id}/questions'
 
-    ans_payload = [{"text" : x} for x in answers]
-    payload = {
-        "headings" : [{"heading" : question_text}],
-        "family" : "single_choice",
-        "subtype" : "vertical",
-        "answers" : {"choices" : ans_payload}
-    }
+    for i in range(len(questions)):
 
-    res = requests.post(url, json=payload, headers=headers)
-    if res.status_code == 201:
-        print(f'Question created : {question_text}')
-    else:
-        print(f'Error creating question : {question_text}')
-        print(res.json())
+        ans_payload = [{"text" : x} for x in answers[i]]
+
+        payload = {
+            "headings" : [{"heading" : questions[i]}],
+            "family" : "single_choice",
+            "subtype" : "vertical",
+            "answers" : {"choices" : ans_payload}
+        }
+
+        res = requests.post(url, json=payload, headers=headers)
+
+        if res.status_code == 201:
+            tmp = res.json()
+            print(f'Question created : {questions[i]} with ID {tmp["id"]} and answers : {answers[i]}')
+
+        else:
+            print(f'Error creating question : {questions[i]}')
+            print(res.json())
+
+
+def get_survey_page(survey_id):
+
+    url = f'{api_base_url}surveys/{survey_id}/pages'
+
+    res = requests.get(url=url, headers=headers)
+
+    id = res.json()['data'][0]['id']
+    return id
 
     
 def parse_questions(file):
@@ -61,6 +78,7 @@ def parse_questions(file):
     survey_name = list(data.keys())[0]
 
     questions = []
+    answers = []
 
     for page_name, q in data[survey_name].items():
         page_info = {
@@ -74,14 +92,23 @@ def parse_questions(file):
                 "Answers" : q_data["Answers"]
             }
 
-            questions.append(q_payload)
+            questions.append(q_payload["Description"])
+            answers.append(q_payload["Answers"])
 
-    return survey_name, questions, page_info
+    return survey_name, questions, page_info, answers
 
 if __name__ == '__main__':
 
     # format args with parser later TODO
-    questions = sys.argv[1]
+    input_json = sys.argv[1]
     emails = sys.argv[2]
 
-    # survey_id = create_survey()
+    survey_name, questions, page_info, answers = parse_questions(input_json)
+
+    survey_id, page_count = create_survey(survey_name) 
+
+    page_id = get_survey_page(survey_id=survey_id)
+    print(f"page id : {page_id}")
+
+    create_question(survey_id=survey_id, questions=questions, answers=answers, page_id=page_id)
+
