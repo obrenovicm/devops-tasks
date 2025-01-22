@@ -3,6 +3,16 @@ import json
 import os
 import dotenv
 import sys
+import base64
+
+import google.auth
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from email.message import EmailMessage
+
 
 api_base_url = 'http://api.surveymonkey.com/v3/'
 dotenv.load_dotenv()
@@ -13,6 +23,8 @@ headers = {
         'Accept' : "application/json",
         'Authorization' : f"Bearer {survey_token}"
 }
+
+SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
 
 
 def create_survey(title):
@@ -93,21 +105,6 @@ def create_collector(survey_id):
         print(res.json())
         return None
     
-
-def create_message(collector_id):
-
-    url = f'{api_base_url}collectors/{collector_id}/messages'
-    pass
-
-def add_recipients(collector_id, message_id):
-    
-    url = f'{api_base_url}/collectors/{collector_id}/messages/{message_id}/recipients'
-    pass
-
-def send_message(collector_id, message_id):
-
-    url = f'{api_base_url}/collectors/{collector_id}/messages/{message_id}/send'
-    pass
     
 def parse_questions(file):
 
@@ -154,3 +151,50 @@ if __name__ == '__main__':
 
     print(f"Collector id : {collector_id} ; URL : {url}")
 
+    #-------------------------------------------------------------------------------------------#
+    #-------------------------- MAIL STUFF -----------------------------------------------------#
+    #-------------------------------------------------------------------------------------------#
+
+
+    creds = None
+
+    if os.path.exists("token.json"):
+        # token.json stores the user's access and refresh tokens.
+        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file("google-creds.json", SCOPES)
+            creds = flow.run_local_server(port=0)
+        
+        with open("token.json", "w") as token:
+            token.write(creds.to_json())
+
+    try:
+        # call the gmail API
+        service = build("gmail", "v1", credentials=creds)
+        message = EmailMessage()
+
+        message.set_content(f'Survey link for SurveyMonkey Task : {url}')
+
+        message["To"] = "mobrenovic@griddynamics.com"
+        message["From"] = "mobrenovic@griddynamics.com"
+        message["Subject"] = "Draft email"
+
+        # encoded msg
+        encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+        create_message = {"raw" : encoded_message}
+
+
+        send_message = service.users().messages().send(userId="me", body=create_message).execute()
+        print(f"Message ID : {send_message['id']}")
+        
+    except HttpError as err:
+        print(f"An error occured : {err}")
+        send_message = None
+
+    

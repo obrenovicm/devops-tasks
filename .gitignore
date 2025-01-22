@@ -3,3 +3,5 @@ db*.txt
 tables*.txt
 .venv/
 .env
+token.json
+google*
