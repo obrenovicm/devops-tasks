@@ -69,6 +69,45 @@ def get_survey_page(survey_id):
     id = res.json()['data'][0]['id']
     return id
 
+def create_collector(survey_id):
+    
+    url = f'{api_base_url}surveys/{survey_id}/collectors'
+
+    payload = {
+        "type" : 'weblink',
+        "name" : "weblink collector"
+    }
+
+    res = requests.post(url, json=payload, headers=headers)
+
+
+    if res.status_code == 201:
+        print("Collector successfully created")
+
+        collector_id = res.json()['id']
+        url = res.json()['url']
+        return collector_id, url
+    
+    else:
+        print("Failed to create collector.")
+        print(res.json())
+        return None
+    
+
+def create_message(collector_id):
+
+    url = f'{api_base_url}collectors/{collector_id}/messages'
+    pass
+
+def add_recipients(collector_id, message_id):
+    
+    url = f'{api_base_url}/collectors/{collector_id}/messages/{message_id}/recipients'
+    pass
+
+def send_message(collector_id, message_id):
+
+    url = f'{api_base_url}/collectors/{collector_id}/messages/{message_id}/send'
+    pass
     
 def parse_questions(file):
 
@@ -108,7 +147,10 @@ if __name__ == '__main__':
     survey_id, page_count = create_survey(survey_name) 
 
     page_id = get_survey_page(survey_id=survey_id)
-    print(f"page id : {page_id}")
 
     create_question(survey_id=survey_id, questions=questions, answers=answers, page_id=page_id)
+
+    collector_id, url = create_collector(survey_id=survey_id)
+
+    print(f"Collector id : {collector_id} ; URL : {url}")
 
