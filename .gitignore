@@ -5,3 +5,4 @@ tables*.txt
 .env
 token.json
 google*
+__pycache__*
