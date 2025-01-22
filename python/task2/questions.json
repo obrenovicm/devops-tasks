@@ -1,0 +1,31 @@
+{
+   "Survey": {
+      "Page1": {
+         "Question1": {
+            "Description": "Which Robin would you want to have as a sidekick?",
+            "Answers": [
+               "Jason Todd",
+               "Dick Grayson",
+               "Tim Drake"
+            ]
+         },
+         "Question2": {
+            "Description": "Which superpower would you prefer to have?",
+            "Answers": [
+               "Invisibility",
+               "Super Strength",
+               "Flying"
+            ]
+         },
+         "Question3": {
+            "Description": "If you were a superhero, what would your superhero name be?",
+            "Answers": [
+               "The Flash",
+               "Captain Justice",
+               "Night Shadow"
+            ]
+         }
+      }
+   }
+}
+
