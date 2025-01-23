@@ -1,7 +1,10 @@
-import uuid
 
 class User:
     
-    def __init__(self, username):
-        self.user_id = str(uuid.uuid4())
+    def __init__(self, user_id, username):
+        self.user_id = user_id
         self.username = username
+
+    
+    def get_user_id(self):
+        return self.user_id

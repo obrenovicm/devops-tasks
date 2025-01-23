@@ -5,3 +5,4 @@ python-dotenv==1.0.1
 urllib3==1.26.10
 python-dotenv==1.0.1
 Flask==3.1.0
+Flask-HTTPAuth==4.8.0
