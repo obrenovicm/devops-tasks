@@ -59,21 +59,7 @@ def verify_token(token):
 def welcome_page():
     return "hello!"
 
-def create_user():
 
-    data = request.json()
-    user_id = data['user_id']
-    username = data['username']
-
-    user = User(user_id=user_id, username=username)
-    
-    if user is None:
-        return jsonify({"error" : "Unable to create user."})
-    
-    users.append(user)
-    return jsonify({"msg" : f"Successfully created user : {user_id}, {username}"}), 201
-
-    
 
 @app.route('/menu', methods=['GET'])
 def list_menu():
@@ -103,7 +89,7 @@ def create_order():
     order.set_price(total_price)
     orders.append(order)
 
-    return jsonify({"order_id" : order.order_id, "status" : order.status, "total_price" : order.total_price}), 201
+    return jsonify(order.to_dict()), 201
 
 @app.route('/order/<int:order_id>', methods=['GET'])
 def check_order_status(order_id):
@@ -112,7 +98,7 @@ def check_order_status(order_id):
     if not order:
         return jsonify({"error" : f"Order with id {order_id} does not exist!"})
     
-    return jsonify(order.to_dict())
+    return jsonify({"order_status" : order.get_status()})
 
 @app.route('/admin/order/<int:order_id>', methods=['DELETE'])
 @auth.login_required
@@ -123,13 +109,13 @@ def delete_order_admin(order_id):
     try:
         orders.remove(order)
     except ValueError:
-        return jsonify({"error" : "Order not found in the list, cannot remove."}), 401
+        return jsonify({"error" : "Order not found in the list, cannot remove."}), 400
     
     return jsonify({"msg" : "Successfully removed order from the list."}), 200
 
 
 @app.route('/order/<int:order_id>', methods=['DELETE'])
-def delete_order(order_id):
+def cancel_order(order_id):
 
     order = get_order_by_id(order_id)
     if not order:
@@ -145,7 +131,7 @@ def delete_order(order_id):
         return jsonify({"error" : "Order not found in the list, cannot delete."}), 400
 
     
-    return jsonify({"msg" : f"Successfully deleted order {order_id}", "status code" : 200})
+    return jsonify({"msg" : f"Successfully deleted order {order_id}"}), 200
 
 
 # admin functions
