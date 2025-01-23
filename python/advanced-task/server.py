@@ -7,6 +7,8 @@ from models.order import Order
 from models.pizza import Pizza
 from models.user import User
 
+import os
+from dotenv import load_dotenv
 import random
 
 app = Flask(__name__)
@@ -19,7 +21,8 @@ pizza_menu = [
     Pizza(4, "Quattro formaggi", 12)
 ]
 
-admin_token = "adminadmin"
+load_dotenv()
+admin_token = os.getenv("ADMIN_TOKEN")
 
 
 orders = []
@@ -111,6 +114,20 @@ def check_order_status(order_id):
     
     return jsonify(order.to_dict())
 
+@app.route('/admin/order/<int:order_id>', methods=['DELETE'])
+@auth.login_required
+def delete_order_admin(order_id):
+
+    order = get_order_by_id(order_id)
+
+    try:
+        orders.remove(order)
+    except ValueError:
+        return jsonify({"error" : "Order not found in the list, cannot remove."}), 401
+    
+    return jsonify({"msg" : "Successfully removed order from the list."}), 200
+
+
 @app.route('/order/<int:order_id>', methods=['DELETE'])
 def delete_order(order_id):
 
@@ -124,7 +141,7 @@ def delete_order(order_id):
     try:
         orders.remove(order)
 
-    except KeyError:
+    except ValueError:
         return jsonify({"error" : "Order not found in the list, cannot delete."}), 400
 
     
@@ -158,24 +175,12 @@ def delete_pizza(pizza_id):
 
     try:
         pizza_menu.remove(pizza)
-    except KeyError:
+    except ValueError:
         return jsonify({"error" : "pizza unsuccessfully removed"}), 401
     
     return jsonify({"msg" : "successfully removed pizza from menu."}), 200
 
 
-@app.route('/order/<int:order_id>', methods=['DELETE'])
-@auth.login_required
-def delete_order_admin(order_id):
-
-    order = get_order_by_id(order_id)
-
-    try:
-        orders.remove(order)
-    except KeyError:
-        return jsonify({"error" : "Order not found in the list, cannot remove."}), 401
-    
-    return jsonify({"msg" : "Successfully removed order from the list."}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
