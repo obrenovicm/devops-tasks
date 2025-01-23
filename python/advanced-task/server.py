@@ -100,18 +100,6 @@ def check_order_status(order_id):
     
     return jsonify({"order_status" : order.get_status()})
 
-@app.route('/admin/order/<int:order_id>', methods=['DELETE'])
-@auth.login_required
-def delete_order_admin(order_id):
-
-    order = get_order_by_id(order_id)
-
-    try:
-        orders.remove(order)
-    except ValueError:
-        return jsonify({"error" : "Order not found in the list, cannot remove."}), 400
-    
-    return jsonify({"msg" : "Successfully removed order from the list."}), 200
 
 
 @app.route('/order/<int:order_id>', methods=['DELETE'])
@@ -147,7 +135,7 @@ def add_pizza():
     pizza = Pizza(id=pizza_id, name=name, price=price)
 
     if pizza is None:
-        return jsonify({"error" : "Unable to create pizza"}), 404
+        return jsonify({"error" : "Unable to create pizza"}), 400
     
     pizza_menu.append(pizza)
     
@@ -162,10 +150,22 @@ def delete_pizza(pizza_id):
     try:
         pizza_menu.remove(pizza)
     except ValueError:
-        return jsonify({"error" : "pizza unsuccessfully removed"}), 401
+        return jsonify({"error" : "pizza unsuccessfully removed"}), 400
     
     return jsonify({"msg" : "successfully removed pizza from menu."}), 200
 
+@app.route('/admin/order/<int:order_id>', methods=['DELETE'])
+@auth.login_required
+def delete_order_admin(order_id):
+
+    order = get_order_by_id(order_id)
+
+    try:
+        orders.remove(order)
+    except ValueError:
+        return jsonify({"error" : "Order not found in the list, cannot remove."}), 400
+    
+    return jsonify({"msg" : "Successfully removed order from the list."}), 200
 
 
 if __name__ == '__main__':
