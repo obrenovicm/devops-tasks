@@ -1,0 +1,45 @@
+pipeline {
+    agent any 
+
+    environment {
+        DOCKER_REGISTRY = "docker.io"  
+        IMAGE_NAME = "spring-petclinic"
+        IMAGE_TAG = "latest"  
+    }
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image
+                    sh 'docker build -t $DOCKER_REGISTRY/$IMAGE_NAME:$IMAGE_TAG .'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Using Jenkins credentials to log in to Docker Hub
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', 
+                                                       usernameVariable: 'DOCKER_USERNAME', 
+                                                       passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY'
+                        
+                        sh 'docker push $DOCKER_REGISTRY/$IMAGE_NAME:$IMAGE_TAG'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Docker image successfully built and pushed."
+        }
+        failure {
+            echo "An error occurred during the build or push process."
+        }
+    }
+}
+
