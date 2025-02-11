@@ -4,7 +4,9 @@ services:
     container_name: jenkins-docker
     privileged: true
     networks:
-      - jenkins
+      jenkins:
+        aliases:
+          - docker  # This sets the alias for the 'jenkins-docker' service
     environment:
       - DOCKER_TLS_CERTDIR=/certs
     volumes:
@@ -19,9 +21,11 @@ services:
     container_name: jenkins-blueocean
     restart: on-failure
     networks:
-      - jenkins
+      jenkins:
+        aliases:
+          - docker  # This also sets the alias for the 'jenkins-blueocean' service (same network)
     environment:
-      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_HOST=tcp://docker:2376  # Now it can refer to the alias 'docker'
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
     volumes:
