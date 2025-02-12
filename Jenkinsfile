@@ -17,7 +17,7 @@ pipeline {
             steps {
                 dir('jenkins') {
                     script {
-                        sh 'gradle checkstyleMain'
+                        sh './gradlew checkstyleMain'
                     }
                 }
             }
