@@ -1,32 +1,29 @@
 pipeline {
-    agent any 
-
+    agent { label 'build-node' }
     environment {
-        DOCKER_REGISTRY = "docker.io"  
-        IMAGE_NAME = "obrenovicm/main/spring-petclinic"
-        IMAGE_TAG = "latest"
-        DOCKER_TLS_VERIFY = '0'  
-        DOCKER_HOST = 'tcp://docker:2376'
-        DOCKER_CERT_PATH = '/certs/client'
+        DOCKER_REGISTRY = "docker.io"
+        IMAGE_NAME = "obrenovicm/main"
+        IMAGE_TAG = "agentv2"
     }
 
     stages {
-
-        stage('Checkout SCM') {
+        stage('Checkout Source Code') {
             steps {
-                checkout scm
+                git branch:'main', url: 'https://github.com/obrenovicm/devops-tasks.git'
             }
         }
-
+        
         stage('Build Docker Image') {
             steps {
-                script {
-                    // Build the Docker image
-                    sh 'docker build -t $DOCKER_REGISTRY/$IMAGE_NAME:$IMAGE_TAG .'
+                dir('jenkins') {
+                    script {
+                        // Running the Docker build from the 'jenkins/' folder
+                        sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                    }
                 }
             }
         }
-
+        
         stage('Push Docker Image') {
             steps {
                 script {
@@ -36,7 +33,8 @@ pipeline {
                                                        passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY'
                         
-                        sh 'docker push $DOCKER_REGISTRY/$IMAGE_NAME:$IMAGE_TAG'
+                        // Push the Docker image to the registry
+                        sh 'docker push obrenovicm/main:$IMAGE_TAG'
                     }
                 }
             }
@@ -44,12 +42,14 @@ pipeline {
     }
 
     post {
+        always {
+            echo 'Build completed.'
+        }
         success {
-            echo "Docker image successfully built and pushed."
+            echo 'Build succeeded.'
         }
         failure {
-            echo "An error occurred during the build or push process."
+            echo 'Build failed.'
         }
     }
 }
-

@@ -16,24 +16,40 @@ services:
       - "2376:2376"
     command: --storage-driver overlay2
 
-  jenkins-blueocean:
+  jenkins-master:
     image: myjenkins-blueocean:2.492.1-1
-    container_name: jenkins-blueocean
+    container_name: jenkins-master
     restart: on-failure
     networks:
       jenkins:
         aliases:
           - docker  # This also sets the alias for the 'jenkins-blueocean' service (same network)
-    environment:
-      - DOCKER_HOST=tcp://docker:2376  # Now it can refer to the alias 'docker'
-      - DOCKER_CERT_PATH=/certs/client
-      - DOCKER_TLS_VERIFY=1
+
     volumes:
       - jenkins-data:/var/jenkins_home
-      - jenkins-docker-certs:/certs/client:ro
+    
     ports:
       - "8080:8080"
       - "50000:50000"
+  
+  jenkins-agent:
+    image: myjenkins-blueocean:2.492.1-1
+    container_name: jenkins-agent
+    restart: on-failure
+    networks:
+      jenkins:
+        aliases:
+          - docker
+
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+    
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+
 
 networks:
   jenkins:
