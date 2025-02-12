@@ -2,8 +2,8 @@ pipeline {
     agent { label 'build-node' }
     environment {
         DOCKER_REGISTRY = "docker.io"
-        IMAGE_NAME = "obrenovicm/main"
-        IMAGE_TAG = "agentv2"
+        IMAGE_NAME = "obrenovicm/mr"
+        IMAGE_TAG = "latest"
     }
 
     stages {
@@ -13,32 +13,17 @@ pipeline {
             }
         }
         
-        stage('Build Docker Image') {
+        stage('Checkstyle') {
             steps {
                 dir('jenkins') {
                     script {
-                        // Running the Docker build from the 'jenkins/' folder
-                        sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                        sh './gradlew checkstyleMain'
                     }
                 }
             }
         }
         
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Using Jenkins credentials to log in to Docker Hub
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', 
-                                                       usernameVariable: 'DOCKER_USERNAME', 
-                                                       passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY'
-                        
-                        // Push the Docker image to the registry
-                        sh 'docker push obrenovicm/main:$IMAGE_TAG'
-                    }
-                }
-            }
-        }
+        
     }
 
     post {
