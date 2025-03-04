@@ -4,6 +4,7 @@ resource "google_compute_instance" "vm" {
   zone = "europe-west1-b"
 
   boot_disk {
+    auto_delete = false
     initialize_params {
       image = "debian-cloud/debian-11"
       
@@ -19,4 +20,15 @@ resource "google_compute_instance" "vm" {
       
     }
   }
+}
+
+resource "google_compute_snapshot" "snapshot" {
+  name = "mobrenovic-tf-snapshot"
+  source_disk = google_compute_instance.vm.boot_disk[0].source
+  zone = google_compute_instance.vm.zone
+}
+
+resource "google_compute_image" "custom-img" {
+  name = "mobrenovic-tf-image"
+  source_snapshot = google_compute_snapshot.snapshot.self_link
 }
