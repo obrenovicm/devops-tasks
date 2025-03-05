@@ -25,3 +25,7 @@ module "instance_template" {
 
 }
 
+module "xlb" {
+  source = "./modules/lb"
+  instance_group = module.instance_template.instance_group
+}

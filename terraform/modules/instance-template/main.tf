@@ -9,6 +9,10 @@ resource "google_compute_instance_template" "instance_template" {
     boot = true
   }
 
+  metadata = {
+    startup-script = "#! /bin/bash\n vm_hostname=\"$(curl -H \"Metadata-Flavor:Google\" \\\n   http://169.254.169.254/computeMetadata/v1/instance/name)\"\n   sudo echo \"Page served from: $vm_hostname\" | \\\n   tee /var/www/html/index.html\n   sudo systemctl restart apache2"
+  }
+
   network_interface {
     network = var.network_name
     subnetwork = var.subnetwork_name
@@ -17,6 +21,8 @@ resource "google_compute_instance_template" "instance_template" {
       
     }
   }
+
+  tags = ["allow-health-check"]
 }
 
 resource "google_compute_instance_group_manager" "igm" {
@@ -25,6 +31,12 @@ resource "google_compute_instance_group_manager" "igm" {
   zone = "europe-west1-b"
   version {
     instance_template = google_compute_instance_template.instance_template.self_link_unique
+    name = "primary"
+  }
+
+  named_port {
+    name = "http"
+    port = 80
   }
 
   project = var.project_id
