@@ -37,7 +37,7 @@ resource "google_compute_backend_service" "default" {
 }
 
 resource "google_compute_url_map" "default" {
-  name = "xlb-url-map"
+  name = "xlb-url-map-obrenovicm"
   default_service = google_compute_backend_service.default.id
 }
 

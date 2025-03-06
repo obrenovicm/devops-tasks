@@ -5,6 +5,11 @@ terraform {
       version = "6.23.0"
     }
   }
+
+  backend "gcs" {
+    bucket = "tf-state-obrenovicm"
+    prefix = "tf/state"
+  }
 }
 
 provider "google" {
