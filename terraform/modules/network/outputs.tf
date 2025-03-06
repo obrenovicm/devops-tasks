@@ -1,19 +1,19 @@
 output "network_name" {
   description = "The name of created VPC"
-  value = module.test-vpc.network_name
+  value = google_compute_network.vpc.name
 }
 
 output "subnets_names" {
   description = "The names of created subnets"
-  value = module.test-vpc.subnets_names
+  value = [ for subnet in google_compute_subnetwork.subnetwork : subnet.name]
 }
 
 output "subnet_ips" {
   description = "The IP and CIDRs of the created subnets"
-  value = module.test-vpc.subnets_ips
+  value = [ for subnet in google_compute_subnetwork.subnetwork : subnet.ip_cidr_range]
 }
 
 output "subnets_regions" {
   description = "The region where subnets will be created"
-  value = module.test-vpc.subnets_regions
+  value = [ for subnet in google_compute_subnetwork.subnetwork : subnet.region]
 }

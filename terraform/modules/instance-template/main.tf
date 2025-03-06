@@ -1,8 +1,6 @@
 resource "google_compute_instance_template" "instance_template" {
-  name = "mobrenovic-tf-template"
-  machine_type = "e2-small"
-  region = "europe-west1"
-  project = var.project_id
+  name = var.template_name
+  machine_type = var.machine_type
 
   disk {
     source_image = var.image_link
@@ -11,7 +9,7 @@ resource "google_compute_instance_template" "instance_template" {
 
   metadata = {
     startup-script = "#! /bin/bash\n vm_hostname=\"$(curl -H \"Metadata-Flavor:Google\" \\\n   http://169.254.169.254/computeMetadata/v1/instance/name)\"\n   sudo echo \"Page served from: $vm_hostname\" | \\\n   tee /var/www/html/index.html\n   sudo systemctl restart apache2"
-  }
+  } # TODO here.
 
   network_interface {
     network = var.network_name
@@ -22,23 +20,21 @@ resource "google_compute_instance_template" "instance_template" {
     }
   }
 
-  tags = ["allow-health-check"]
+  tags = var.tags
 }
 
 resource "google_compute_instance_group_manager" "igm" {
-  name = "mobrenovic-tf-igm"
-  base_instance_name = "tf-misikori-instance"
-  zone = "europe-west1-b"
+  name = var.group-name
+  base_instance_name = var.base_instance_name
   version {
     instance_template = google_compute_instance_template.instance_template.self_link_unique
     name = "primary"
   }
 
   named_port {
-    name = "http"
-    port = 80
+    name = var.named_port.name
+    port = var.named_port.port
   }
 
-  project = var.project_id
-  target_size = 3
+  target_size = var.target_size
 }

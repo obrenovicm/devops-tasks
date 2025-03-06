@@ -1,23 +1,14 @@
-module "test-vpc" {
-    source  = "terraform-google-modules/network/google"
-    version = "~> 10.0.0"
+resource "google_compute_network" "vpc" {
+  name = var.network_name
+  auto_create_subnetworks = var.auto_create_subnetworks
 
-    project_id   = var.project_id
-    network_name = "mobrenovic-tf-vpc"
+}
 
-    shared_vpc_host = false
+resource "google_compute_subnetwork" "subnetwork" {
+  for_each = { for subnet in var.subnetworks : subnet.subnet_name => subnet}
 
-
-    subnets = [
-      {
-        subnet_name = "subnet-01"
-        subnet_ip = "10.10.10.0/24"
-        subnet_region = "europe-west1"
-      },
-      {
-        subnet_name = "subnet-02"
-        subnet_ip = "10.10.20.0/24"
-        subnet_region = "europe-west1"
-      }
-    ]
+  name = each.value.subnet_name
+  network = google_compute_network.vpc.name
+  region = each.value.region
+  ip_cidr_range = each.value.ip_cidr_range
 }

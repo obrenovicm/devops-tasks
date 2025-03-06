@@ -1,17 +1,15 @@
 resource "google_compute_instance" "vm" {
-  name = "mobrenovic-terraform-vm"
-  machine_type = "e2-small"
-  zone = "europe-west1-b"
+  name = var.vm_name
+  machine_type = var.machine_type
 
   boot_disk {
-    auto_delete = false
+    auto_delete = var.boot_disk.auto_delete
     initialize_params {
-      image = "debian-cloud/debian-11"
-      
+      image = var.boot_disk.initialize_params.image
     }
   }
 
-  metadata_startup_script = file("./modules/compute/startup.sh")
+  metadata_startup_script = file(var.metadata_startup_script)
 
   network_interface {
     network = var.network_name
@@ -23,12 +21,12 @@ resource "google_compute_instance" "vm" {
 }
 
 resource "google_compute_snapshot" "snapshot" {
-  name = "mobrenovic-tf-snapshot"
+  name = "${google_compute_instance.vm.name}-snapshot"
   source_disk = google_compute_instance.vm.boot_disk[0].source
   zone = google_compute_instance.vm.zone
 }
 
 resource "google_compute_image" "custom-img" {
-  name = "mobrenovic-tf-image"
+  name = "${google_compute_instance.vm.name}-image"
   source_snapshot = google_compute_snapshot.snapshot.self_link
 }
