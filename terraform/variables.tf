@@ -60,3 +60,50 @@ variable "named_port" {
     port = number
   })
 }
+
+variable "static-name" {
+  type = string
+}
+
+variable "hc-name" {
+  type = string
+}
+
+variable "http_health_check" {
+  type = object({
+    host               = optional(string)
+    port               = optional(number)
+    port_specification = optional(string)
+    request_path       = optional(string)
+    proxy_header       = optional(string)
+
+  })
+}
+
+variable "backend-service-name" {
+  type = string
+}
+
+variable "backend-port-name" {
+  type = string
+}
+
+variable "url-map-name" {
+  type = string  
+}
+
+variable "proxy-name" {
+  type = string
+}
+
+variable "forwarding-rule-name" {
+  type = string
+}
+
+variable "ip-protocol" {
+  type = string
+}
+
+variable "port-range" {
+  type = string
+}

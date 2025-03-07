@@ -33,7 +33,18 @@ module "instance_template" {
   named_port = var.named_port
 }
 
-# module "xlb" {
-#   source = "./modules/lb"
-#   instance_group = module.instance_template.instance_group
-# }
+module "xlb" {
+  source = "./modules/lb"
+  instance_group = module.instance_template.instance_group
+
+  static-name = var.static-name
+  hc-name = var.hc-name
+  http_health_check = var.http_health_check
+  backend-service-name = var.backend-service-name
+  backend-port-name = var.backend-port-name
+  url-map-name = var.url-map-name
+  proxy-name = var.proxy-name
+  forwarding-rule-name = var.forwarding-rule-name
+  ip-protocol = var.ip-protocol
+  port-range = var.port-range
+}

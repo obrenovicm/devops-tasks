@@ -1,56 +1,53 @@
 resource "google_compute_global_address" "lb-external-addr" {
-  name = "xlb-static"
-  ip_version = "IPV4"
+  name = var.static-name
+  ip_version = var.ip-version
 }
 
 resource "google_compute_health_check" "default" {
-  name = "http-basic-check"
-  check_interval_sec = 5
-  healthy_threshold = 2
+  name = var.hc-name
+  check_interval_sec = var.check-interval-sec
+  healthy_threshold = var.healthy-threshold
 
   http_health_check {
-    port = 80
-    port_specification = "USE_FIXED_PORT"
-    proxy_header = "NONE"
-    request_path = "/"
+    port = var.http_health_check.port
+    port_specification = var.http_health_check.port_specification
+    proxy_header = var.http_health_check.proxy_header
+    request_path = var.http_health_check.request_path
   }
 
-  timeout_sec = 5
-  unhealthy_threshold = 2
+  timeout_sec = var.timeout_sec
+  unhealthy_threshold = var.unhealthy_threshold
 }
 
 resource "google_compute_backend_service" "default" {
-  name = "xlb-backend-service"
-  connection_draining_timeout_sec = 0
+  name = var.backend-service-name
+  connection_draining_timeout_sec = var.connection-draining-timeout-sec
   health_checks = [google_compute_health_check.default.id]
-  load_balancing_scheme = "EXTERNAL"
-  port_name = "http"
-  protocol = "HTTP"
-  session_affinity = "NONE"
-  timeout_sec = 30
+  load_balancing_scheme = var.load-balancing-scheme
+  port_name = var.backend-port-name
+  protocol = var.protocol
 
   backend {
     group = var.instance_group
-    balancing_mode = "UTILIZATION"
-    capacity_scaler = 1.0
+    balancing_mode = var.balancing-mode
   }
 }
 
 resource "google_compute_url_map" "default" {
-  name = "xlb-url-map-obrenovicm"
+  name = var.url-map-name
   default_service = google_compute_backend_service.default.id
 }
 
 resource "google_compute_target_http_proxy" "default" {
-  name = "xlb-http-proxy"
+  name = var.proxy-name
   url_map = google_compute_url_map.default.id
 }
 
 resource "google_compute_global_forwarding_rule" "default" {
-  name = "xlb-forwarding-rule"
-  ip_protocol = "TCP"
-  load_balancing_scheme = "EXTERNAL"
-  port_range = "80"
+  name = var.forwarding-rule-name
+  ip_protocol = var.ip-protocol
+  load_balancing_scheme = var.load-balancing-scheme
+  port_range = var.port-range
   target = google_compute_target_http_proxy.default.id
   ip_address = google_compute_global_address.lb-external-addr.id
 
