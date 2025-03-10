@@ -94,3 +94,8 @@ variable "ip-protocol" {
 variable "port-range" {
   type = string
 }
+
+variable "ip_white_list" {
+  type = list(string)
+  
+}

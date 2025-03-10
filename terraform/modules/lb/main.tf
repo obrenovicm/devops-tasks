@@ -31,6 +31,8 @@ resource "google_compute_backend_service" "default" {
     group = var.instance_group
     balancing_mode = var.balancing-mode
   }
+
+  security_policy = google_compute_security_policy.security-policy-1.self_link
 }
 
 resource "google_compute_url_map" "default" {
@@ -51,4 +53,38 @@ resource "google_compute_global_forwarding_rule" "default" {
   target = google_compute_target_http_proxy.default.id
   ip_address = google_compute_global_address.lb-external-addr.id
 
+}
+
+resource "google_compute_security_policy" "security-policy-1" {
+  name = "armor-security-policy"
+  description = "Security policy to restrict access to the load balancer."
+
+   rule {
+    action   = "deny(403)"
+    priority = "2147483647"
+
+    match {
+      versioned_expr = "SRC_IPS_V1"
+
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+
+    description = "Default rule, higher priority overrides it"
+  }
+
+    rule {
+    action   = "allow"
+    priority = "1000"
+
+    match {
+      versioned_expr = "SRC_IPS_V1"
+
+      config {
+        src_ip_ranges = var.ip_white_list
+      }
+    }
+
+  }
 }
