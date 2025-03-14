@@ -48,4 +48,5 @@ module "xlb" {
   ip-protocol = var.ip-protocol
   port-range = var.port-range
   ip_white_list = var.ip_white_list
+  security-policy-name = var.security-policy-name
 }

@@ -56,7 +56,7 @@ resource "google_compute_global_forwarding_rule" "default" {
 }
 
 resource "google_compute_security_policy" "security-policy-1" {
-  name = "armor-security-policy"
+  name = var.security-policy-name
   description = "Security policy to restrict access to the load balancer."
 
    rule {

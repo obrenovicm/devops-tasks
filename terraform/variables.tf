@@ -111,3 +111,7 @@ variable "port-range" {
 variable "ip_white_list" {
   type = list(string)
 }
+
+variable "security-policy-name" {
+  type = string
+}

@@ -10,6 +10,7 @@ variable "static-name" {
 variable "ip-version" {
   type = string
   default = "IPV4"
+  description = "IP version for global address."
 }
 
 variable "hc-name" {
@@ -19,11 +20,13 @@ variable "hc-name" {
 variable "check-interval-sec" {
   type = number
   default = 5
+  description = "Check interval for health check"
 }
 
 variable "healthy-threshold" {
   type = number
   default = 2
+  description = "Healthy threshold for health check"
 }
 
 variable "http_health_check" {
@@ -64,6 +67,7 @@ variable "load-balancing-scheme" {
 variable "protocol" {
   type = string
   default = "HTTP"
+  description = "Protocol used for backend service."
 }
 
 variable "backend-port-name" {
@@ -89,13 +93,21 @@ variable "forwarding-rule-name" {
 
 variable "ip-protocol" {
   type = string
+  description = "IP protocol in forwarding rule"
 }
 
 variable "port-range" {
   type = string
+  description = "Port range in forwarding rule"
 }
 
 variable "ip_white_list" {
   type = list(string)
+  description = "Whitelist IPs for Cloud Armor"
   
+}
+
+variable "security-policy-name" {
+  type = string
+  default = "armor-security-policy"
 }

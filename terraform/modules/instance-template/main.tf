@@ -15,9 +15,7 @@ resource "google_compute_instance_template" "instance_template" {
     network = var.network_name
     subnetwork = var.subnetwork_name
 
-    access_config {
-      
-    }
+   
   }
 
   tags = var.tags
