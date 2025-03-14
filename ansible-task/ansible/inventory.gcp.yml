@@ -1,0 +1,7 @@
+plugin: gcp_compute
+projects:
+  - gd-gcp-internship-devops
+auth_kind: serviceaccount
+service_account_file: ~/Downloads/gd-gcp-internship-devops-da7521563ecd.json
+filters:
+  - labels.ansible_target = true

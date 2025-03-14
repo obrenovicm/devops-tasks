@@ -1,0 +1,64 @@
+---
+- name: First playbook.
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - wait_for_connection:
+
+    - setup:
+
+    - name: test connection
+      ping:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Docker dependencies
+      apt:
+        name: apt-transport-https, ca-certificates, curl, gnupg, lsb-release
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce, docker-ce-cli, containerd.io
+        state: present
+
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes
+
+    - name: Pull Docker image
+      docker_image:
+        name: "obrenovicm/main:f79d15bb"
+        state: present
+        source: pull
+    
+    - name: Run Docker container
+      docker_container:
+        name: "my-petclinic-container"
+        image: "obrenovicm/main:f79d15bb"
+        state: started
+        ports:
+          - "8080:8080"
+        
