@@ -1,0 +1,18 @@
+namespace: my-petclinic-namespace  
+
+deployment:
+  name: misikori-deployment
+  label: my-app
+
+pod:
+  label: my-app
+
+container:
+  name: misikori-petclinic
+  image: obrenovicm/main:f79d15bb 
+
+service:
+  name: my-service
+  port: 8080
+  targetPort: 8080
+  type: LoadBalancer
